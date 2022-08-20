@@ -1,2 +1,6 @@
 *.ini
 venv/
+*.json
+*.log
+*cache*
+*.pyc

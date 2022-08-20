@@ -1,28 +1,47 @@
-# Creating a Reddit stock bot using the Reddit API and TWS API
+# A simple Reddit bot
 
-In this article I will create a Reddit stock bot using the official Reddit REST API and Interactive Brokers TWS API.
-The bot works in a similar fashion to other bots currently found on Reddit. A user interested in market data for a particular 
-stock can call the bot in a comment along with the ticker symbol for the instrument. 
-The mention is intercepted by the bot along with the requested ticker.
-Using TWS API the bot requests stock data for the particular instrument. The bot then uses the data to send a response 
-to the user.
+A Python library that makes it easy to build Reddit bots. The library provides a simple wrapper around Reddit's REST API. 
 
-1. # Sign up for a free Reddit account
+## How to create a bot?
 
-    In order to create a bot, we'll need to create a Reddit account. Go ahead, choose a name suitable for the bot you're developing.
-    In this case, we will call the bot, market-data-bot.
+1. Register your app with Reddit. 
+    - Navigate to https://www.reddit.com/prefs/apps 
+    - Scroll down to the bottom of the page and click on 'Create an app'
+    - Enter a name for the app 
+    - Select the script option 
+    - You can enter http://www.example.com/unused/redirect/uri for the redirect URL
 
-2. # Navigate to the Apps page
+    Note the client ID (located in the upper right corner, under the name of the app), the client secret and app name
 
-    The apps page can be found here: https://www.reddit.com/prefs/apps. On the bottom you will need to press the 'Create a new app' button.
-    Enter a name for the application, this will usually be similar to what your bot username is. 
+2. Create a config.ini file in the root of your project. The configuration file should be of the following format:
 
-3. # Request an OAuth token
+    ```
+    [DEFAULT]
+    app_name = the-name-of-your-app-as-registered-with-reddit
+    app_version = the-version-of-your-app
+    timeout = time-out-between-each-iteration-in-seconds
 
-    https://github.com/reddit-archive/reddit/wiki/OAuth2-Quick-Start-Example
+    [AUTH]
+    auth_url = https://www.reddit.com/api/v1/access_token
+    client_id = your-apps-client-id-as-registered-with-reddit
+    client_secret = your-apps-client-id-as-registered-with-reddit
+    username = the-username-associated-with-the-bot
+    password = the-password-for-the-bot-account
 
-4. # Create the request headers
+    [ACCESS_TOKEN]
 
-5. # Setting up the required endpoints
+    [LOGGING]
+    log_name = client
+    log_level = DEBUG
+    log_dir = logs
+    ```
 
-6. # Test the bots reading / response capabilities
+3. Create a client class that inherits from the RedditClient app.
+
+4. Add a `main` method in the client class. This method contains the actions your bot should undertake on each iteration. 
+
+5. Call the run method on the client.
+
+## What is the rate limit for requests?
+
+The Reddit API has a rate limit of 60 requests per minute. 
