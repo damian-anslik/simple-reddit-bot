@@ -3,6 +3,9 @@ from reddit_bot import RedditClient
 from tinydb import TinyDB, where
 
 class UserDownloadBot(RedditClient):
+    """ 
+    Requests all comments and submissions made by a user and stores them in a TinyDB database. 
+    """
     def __init__(self, config_file: str, username: str) -> None:
         super().__init__(config_file)
         self.last_thing_name = None
@@ -35,6 +38,9 @@ class UserDownloadBot(RedditClient):
         self.get_all_user_comments()
 
 class SubredditDownloadBot(RedditClient):
+    """ 
+    Requests all new submissions from a subreddit and saves them to a database.
+    """
     def __init__(self, config_file: str, subreddit: str, limit: int = 100) -> None:
         super().__init__(config_file)
         self.last_thing_name = None
@@ -60,6 +66,20 @@ class SubredditDownloadBot(RedditClient):
     def main(self):
         self.get_subreddit_submissions()
 
-if __name__ == '__main__':
-    subreddit_bot = SubredditDownloadBot('config.ini', 'ireland')
-    subreddit_bot.run()
+class DeleteCommentsBot(RedditClient):
+    """ 
+    Deletes all comments made by the user.
+    """
+    def __init__(self, config_file: str) -> None:
+        super().__init__(config_file)
+
+    def delete_user_comments(self) -> None:
+        user_comments = self.get_user_comments(limit=50)
+        if not user_comments:
+            self.stop()
+        for comment in user_comments:
+            submission_name = comment['data']['name']
+            self.delete_user_submission(submission_name)
+
+    def main(self):
+        self.delete_user_comments()
