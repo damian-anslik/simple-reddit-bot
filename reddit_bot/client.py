@@ -86,6 +86,9 @@ class RedditClient:
         self.timeout = self.config.getint('DEFAULT', 'timeout', fallback=60)
 
     def get_recent_submissions(self, subreddit: str, before: str = None, after: str = None, limit: int = 100) -> list[dict[str, str]]:
+        """  
+        Get a list of recent submissions from a subreddit.
+        """
         request_data = {
             'before': before,
             'after': after,
@@ -96,33 +99,56 @@ class RedditClient:
             raise Exception(f'Error getting recent submissions from {subreddit}: {response.text}')
         return response.json()['data']['children']
     
-    def request_user_info(self) -> dict[str, str]:
-        response = get("https://oauth.reddit.com/api/v1/me", headers=self.headers)
+    def request_user_info(self, username: str = None) -> dict[str, str]:
+        """  
+        Request information about the user. If no username is provided, the information about the authenticated user will be returned.
+        """
+        if not username:
+            username = self.config.get('AUTH', 'username')
+        response = get(f'https://oauth.reddit.com/user/{username}/about', headers=self.headers)
         if not response.ok:
             return response.raise_for_status()
         return response.json()
 
     def mark_messages_as_read(self, message_id_list: list[str]) -> dict[str, str]:
+        """  
+        Marks a list of messages as read.
+        """
         request_data = {"id": ",".join(message_id_list)}
         response = post("https://oauth.reddit.com/api/read_message", headers=self.headers, data=request_data)
         if not response.ok:
             response.raise_for_status()
 
-    def reply_to_message(self, message_id: str, message: str) -> dict[str, str]:
-        response = post(f"https://oauth.reddit.com/api/comment?thing_id={message_id}&text={message}", headers=self.headers)
+    def reply_to_message(self, message_id: str, reply: str) -> dict[str, str]:
+        """  
+        Reply to a specific message.
+        """
+        response = post(f"https://oauth.reddit.com/api/comment?thing_id={message_id}&text={reply}", headers=self.headers)
         if not response.ok:
             return response.raise_for_status()
         return response.json()
 
-    def request_unread_messages(self) -> dict[str, str]:
+    def request_unread_messages(self) -> list[dict[str, str]]:
+        """  
+        Requests a list of unread messages.
+        """
         response = get("https://oauth.reddit.com/message/unread", headers=self.headers)
+        if not response.ok:
+            return response.raise_for_status()
+        return response.json()['data']['children']
+
+    def request_subreddit_info(self, subreddit: str) -> dict[str, str]:
+        """  
+        Requests information about a specific subreddit.
+        """
+        response = get(f"https://oauth.reddit.com/r/{subreddit}/about", headers=self.headers)
         if not response.ok:
             return response.raise_for_status()
         return response.json()
 
     def get_user_comments(self, username: str = None, after: str = None, before: str = None, limit: int = 100) -> list[dict[str, str]]:
         """ 
-        Get a list of comments made by the user. Leave username blank to get comments made by the bot.
+        Get a list of comments made by a specified user. Leave the username blank to get comments made by the bot.
         """
         if not username:
             username = self.config.get('AUTH', 'username')
@@ -139,7 +165,7 @@ class RedditClient:
     
     def get_user_submissions(self, username: str = None, after: str = None, before: str = None, limit: int = 100) -> list[dict[str, str]]:
         """ 
-        Get a list of submissions made by the user. Leave username blank to get comments made by the bot.
+        Get a list of submissions made by a specified user. Leave the username blank to get submissions made by the bot.
         """
         if not username:
             username = self.config.get('AUTH', 'username')
@@ -153,6 +179,18 @@ class RedditClient:
         if not response.ok:
             return response.raise_for_status()
         return response.json()['data']['children']
+
+    def delete_user_submission(self, thing_id: str) -> dict[str, str]:
+        """  
+        Delete submissions for the current user. User submissions can be comments, posts, or both.
+
+        args:
+            thing_id: The ID of the thing to delete. 
+        """
+        response = post(f"https://oauth.reddit.com/api/del", headers=self.headers, data={"id": thing_id})
+        if not response.ok:
+            return response.raise_for_status()
+        return response.json()
 
     def run(self) -> None:
         while self.__is_access_token_valid(self.access_token_expiry_time):
