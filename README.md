@@ -24,7 +24,7 @@ A Python library that makes it easy to build Reddit bots. The library provides a
     [AUTH]
     auth_url = https://www.reddit.com/api/v1/access_token
     client_id = your-apps-client-id-as-registered-with-reddit
-    client_secret = your-apps-client-id-as-registered-with-reddit
+    client_secret = your-apps-client-secret-as-registered-with-reddit
     username = the-username-associated-with-the-bot
     password = the-password-for-the-bot-account
 
